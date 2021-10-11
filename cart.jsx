@@ -79,6 +79,7 @@ const Products = (props) => {
   const [items, setItems] = React.useState(products);
   const [cart, setCart] = React.useState([]);
   const [total, setTotal] = React.useState(0);
+  const [isOutStock, setIsOutStock] = React.useState(false);
   const { Card, Accordion, Button, Container, Row, Col, Image, Input } =
     ReactBootstrap;
   //  Fetch Data
@@ -96,11 +97,39 @@ const Products = (props) => {
     let name = e.target.name;
     let item = items.filter((item) => item.name == name);
     console.log(`add to Cart ${JSON.stringify(item)}`);
-    setCart([...cart, ...item]);
+    let isOut =false;
+    items.map((item) => {
+      if (item.name === name) {
+        if (item.instock > 0) {
+          item.instock = item.instock - 1;
+        }
+        else{
+          isOut=true
+        }
+      }
+    });
+    setIsOutStock(isOut);
+    setItems(items);
+    if(!isOut){
+      setCart([...cart, ...item]);
+    }
     //doFetch(query);
   };
   const deleteCartItem = (index) => {
+    
+    console.log(cart);
+    let itemDeleted = cart[index];
     let newCart = cart.filter((item, i) => index != i);
+    console.log("item deleted: " + itemDeleted);
+
+    items.map((item) => {
+      if (item.name === itemDeleted.name) {
+          item.instock = item.instock + 1;
+
+      }
+    });
+    setIsOutStock(false);
+    setItems(items);
     setCart(newCart);
   };
   const photos = ["apple.png", "orange.png", "beans.png", "cabbage.png"];
@@ -143,6 +172,7 @@ const Products = (props) => {
                   value="Add to Cart"
                   className="btn btn-primary"
                   style={{ top: "50%" }}
+                  disabled={isOutStock}
                 ></input>
               </div>
             </div>
